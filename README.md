@@ -106,7 +106,7 @@ python train.py --base_model_names <model_names> --shape <shape> --data_path <da
 **Example:**
 
 ```sh
-python train.py --base_models "VGG16,ResNet50" --shape 224 224 3 --data_path "./data" --log_dir "./logs" --model_dir "./models" --epochs 100 --optimizer "adam" --learning_rate 0.001 --batch_size 32
+python train.py --base_models "VGG16" "ResNet50" --shape 224 224 3 --data_path "./Processed_data" --log_dir "./logs" --model_dir "./models" --epochs 100 --optimizer "adam" --learning_rate 0.001 --batch_size 32
 ```
 
 #### 3. `test.py`
@@ -131,7 +131,7 @@ python test.py --data_path <data_path> --base_model_name <base_model_name> --mod
 **Example:**
 
 ```sh
-python test.py --model_path "./models/vgg16_model.pth" --test_dir "./test_data" --train_dir ".data/train" --log_dir "./logs"
+python test.py --model_path "./models/vgg16_model.keras" --test_dir "./test_data" --train_dir "./processed_data/train" --log_dir "./logs"
 ```
 
 #### 4. `predict.py`
@@ -153,14 +153,14 @@ python predict.py --model_path <model_path> --img_path <img_path> --train_dir <t
 **Example:**
 
 ```sh
-python predict.py --model_path "./models/vgg16_model.pth" --img_path "./images/test_image.jpg" --train_dir "./data/train"
+python predict.py --model_path "./models/vgg16_model.keras" --img_path "./images/test_image.jpg" --train_dir "./processed_data/train"
 ```
 #### 5. `predict_and_explain.py`
 
 This script is used for making predictions on new images and to generate an explanation using LIME or SP-LIME. It will also save the explanation images in the `explanation` directory with filenames indicating the method used (e.g., `lime_explanation_1.jpg` or `splime_explanation_1.jpg`).
 
 ```sh
-python predict_and_explain.py --image_path /path/to/image.jpg --model_path /path/to/model.h5 --train_directory /path/to/train --explanation_method lime --num_samples 100 --num_features 10 --segmentation_alg quickshift --kernel_size 2 --max_dist 200 --ratio 0.1
+python predict_and_explain.py --image_path /path/to/image.jpg --model_path /path/to/model.keras --train_directory /path/to/train --explanation_method lime --num_samples 100 --num_features 10 --segmentation_alg quickshift --kernel_size 2 --max_dist 200 --ratio 0.1
 ```
 
 **Arguments:**
@@ -179,7 +179,7 @@ python predict_and_explain.py --image_path /path/to/image.jpg --model_path /path
 **Example:**
 
 ```sh
-python predict_and_explain.py --image_path sample.jpg --model_path model.h5 --train_directory train_data --explanation_method lime --num_samples 100 --num_features 10
+python predict_and_explain.py --image_path <sample.jpg> --model_path <model.keras> --train_directory <train_data> --explanation_method lime --num_samples 100 --num_features 10
 ```
 
 ### Supported Base Models
@@ -210,7 +210,7 @@ import subprocess
 # Run data_loader.py
 subprocess.run([
     "python", "data_loader.py",
-    "--path", "./data",
+    "--path", "./dataset",
     "--target_folder", "./processed_data",
     "--dim", "224",
     "--batch_size", "32",
@@ -221,9 +221,9 @@ subprocess.run([
 # Run train.py
 subprocess.run([
     "python", "train.py",
-    "--base_models", "VGG16,ResNet50",
+    "--base_models", "VGG16" "ResNet50",
     "--shape", "224, 224, 3",
-    "--data_path", "./data",
+    "--data_path", "./processed_data",
     "--log_dir", "./logs",
     "--model_dir", "./models",
     "--epochs", "100",
@@ -239,25 +239,25 @@ subprocess.run([
     "--models_dir", "./models",
     "--img_path", "./data/test/img.jpg"
     "--test_dir", "./test",
-    "--train_dir", "./data/train",
-    "--model_path", "./models/vgg16_model.pth",
+    "--train_dir", "./processed_data/train",
+    "--model_path", "./models/vgg16_model.keras",
     "--log_dir", "./logs"
 ])
 
 # Run predict.py
 subprocess.run([
     "python", "predict.py",
-    "--model_path", "./models/vgg16_model.pth",
+    "--model_path", "./models/vgg16_model.keras",
     "--img_path", "./images/test_image.jpg",
-    "--train_dir", "./data/train"
+    "--train_dir", "./processed_data/train"
 ])
 
 # Run predict_and_explain.py
 subprocess.run([
     "python", "predict_and_explain.py",
     "--image_path", "./images/test_image.jpg",
-    "--model_path", "./models/model.h5",
-    "--train_directory", "./data/train",
+    "--model_path", "./models/model.keras",
+    "--train_directory", "./processed_data/train",
     "--explanation_method", "lime",
     "--num_samples", "100",
     "--num_features", "10"

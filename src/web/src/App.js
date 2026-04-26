@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Login from "./Login";
 import SonarApp from "./Sonar";
+import { initRipple } from "./ripple";
 
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+  initRipple();
+  }, []);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -40,34 +45,28 @@ const App = () => {
     checkToken();
   }, []);
 
-  if (checkingAuth) {
-    return (
-      <div
-        style={{
-          color: "#60a5fa",
-          fontFamily: "Inter, sans-serif",
-          height: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.5rem",
-        }}
-      >
-        Checking authentication...
-      </div>
-    );
-  }
-
   return (
     <>
-      {isAuthenticated ? (
+      <canvas id="ripple-canvas"></canvas>
+
+      {checkingAuth ? (
+        <div
+          style={{
+            color: "#60a5fa",
+            fontFamily: "Inter, sans-serif",
+            height: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.5rem",
+          }}
+        >
+          Checking authentication...
+        </div>
+      ) : isAuthenticated ? (
         <SonarApp />
       ) : (
-        <Login
-          onLogin={() => {
-            setIsAuthenticated(true);
-          }}
-        />
+        <Login onLogin={() => setIsAuthenticated(true)} />
       )}
     </>
   );

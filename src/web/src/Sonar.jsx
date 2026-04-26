@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import JSZip from "jszip";
 
 import {
-  Upload, Home, Clock, LogOut, Loader2, X, Sparkles,
-  Fish, Ship, Mountain, AlertCircle, User, Plane, BookOpen
+  Upload, Home, Clock, LogOut, Loader2, X,
+  Fish, Ship, Mountain, AlertCircle, User, Plane, BookOpen,
+  Satellite, Search
 } from "lucide-react";
+
 import Results from "./Results";
 import "./SonarDashboard.css";
 
@@ -90,30 +92,29 @@ export default function Sonar() {
       const raw = await response.json();
       const data = raw.model_prediction;
 
-      const mappedClasses = Object.entries(data.probabilities).map(
-        ([category, confidence]) => ({
-          category,
-          confidence,
+      const mappedClasses = [
+        {
+          category: data.label,
+          confidence: data.probability * 100,
           icon:
-            category === "ship" ? <Ship size={14} /> :
-            category === "fish" ? <Fish size={14} /> :
-            category === "mine" ? <AlertCircle size={14} /> :
-            category === "plane" ? <Plane size={14} /> :
-            category === "human" ? <User size={14} /> :
-            category === "seafloor" ? <Mountain size={14} /> :
+            data.label === "ship" ? <Ship size={14} /> :
+            data.label === "fish" ? <Fish size={14} /> :
+            data.label === "mine" ? <AlertCircle size={14} /> :
+            data.label === "plane" ? <Plane size={14} /> :
+            data.label === "human" ? <User size={14} /> :
+            data.label === "seafloor" ? <Mountain size={14} /> :
             null,
-        })
-      );
+        }
+      ];
 
       const finalResult = {
         original: imgDataUrl,
         processed: imgDataUrl,
-        heatmap: imgDataUrl,
+        gradcamHeatmap: `data:image/png;base64,${data.gradcam_image_base64}`,
+        limeHeatmap: `data:image/png;base64,${data.lime_image_base64}`,
         filename: file.name,
-        aiDescription: `${data.predicted_class.toUpperCase()} detected with ${data.confidence_percent.toFixed(
-          2
-        )}% confidence`,
-        classifications: mappedClasses.sort((a, b) => b.confidence - a.confidence),
+        aiDescription: `${data.label.toUpperCase()} detected with ${(data.probability * 100).toFixed(1)}% confidence`,
+        classifications: mappedClasses,
         metadata: { timestamp: formatDate(), uploadedBy: username },
       };
 
@@ -234,41 +235,47 @@ export default function Sonar() {
   }
 
   const Navbar = ({ currentPage, onNavigate }) => (
-    <nav className="navbar">
-      <div className="nav-container">
-        <div className="nav-left">
-          <div className="logo-wrapper">
-            <div className="logo-box"><Satellite size={20} /></div>
-          </div>
-          <div className="logo-text">
-            <div className="brand">SONAR AI</div>
-            <div className="brand-sub">{username}</div>
-          </div>
+  <nav className="navbar">
+    <div className="nav-container">
+      <div className="nav-left">
+        <div className="logo-wrapper">
+          <div className="logo-box"><Satellite size={20} /></div>
         </div>
-
-        <div className="nav-right">
-          <button className={`nav-button ${currentPage === "home" ? "active" : ""}`} onClick={() => onNavigate("home")}>
-            <Home size={14} /> <span>Dashboard</span>
-          </button>
-
-          <button className={`nav-button ${currentPage === "history" ? "active" : ""}`} onClick={() => {
-            fetchHistory();
-            onNavigate("history");
-          }}>
-            <Clock size={14} /> <span>History</span>
-          </button>
-
-          <button className={`nav-button ${currentPage === "bookmarks" ? "active" : ""}`} onClick={() => onNavigate("bookmarks")}>
-            <BookOpen size={14} /> <span>Bookmarks</span>
-          </button>
-
-          <button className="nav-button logout" onClick={handleLogout}>
-            <LogOut size={14} /> <span>Logout</span>
-          </button>
+        <div className="logo-text">
+          <div className="brand">SONAR AI</div>
+          <div className="brand-sub">{username}</div>
         </div>
       </div>
-    </nav>
-  );
+
+      <div className="nav-right">
+        <button
+          className={`nav-button ${currentPage === "home" ? "active" : ""}`}
+          onClick={(e) => onNavigate("home", e)}
+        >
+          <Home size={14} /> <span>Dashboard</span>
+        </button>
+
+        <button
+          className={`nav-button ${currentPage === "history" ? "active" : ""}`}
+          onClick={(e) => onNavigate("history", e)}
+        >
+          <Clock size={14} /> <span>History</span>
+        </button>
+
+        <button
+          className={`nav-button ${currentPage === "bookmarks" ? "active" : ""}`}
+          onClick={(e) => onNavigate("bookmarks", e)}
+        >
+          <BookOpen size={14} /> <span>Bookmarks</span>
+        </button>
+
+        <button className="nav-button logout" onClick={handleLogout}>
+          <LogOut size={14} /> <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+);
 
   const HistoryPage = () => (
     <div className="history-page">
@@ -379,11 +386,24 @@ export default function Sonar() {
     <div className="sonar-dashboard">
       <Navbar
         username={username}
-        onNavigate={(p) => {
-          if (p === "history") fetchHistory();
+        onNavigate={(p, e) => {
+          if (p === "history")
+            fetchHistory();
+
           setCurrentPage(p);
           setShowResults(false);
-        }}
+
+          const rect = e?.currentTarget?.getBoundingClientRect();
+
+          const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+          const y = rect ? rect.top + rect.height : window.innerHeight / 2;
+
+          document.dispatchEvent(
+          new CustomEvent("page-change", {
+          detail: { x, y },
+        })
+    );
+  }}
         currentPage={currentPage}
       />
 
@@ -410,9 +430,9 @@ export default function Sonar() {
                   <div className="header-left">
                     <Search size={20} />
                     <div>
-                      <h3>Analyze SONAR Images</h3>
+                      <h3>SONAR image classification</h3>
                       <p className="subtitle">
-                        Upload underwater SONAR imagery for AI classification. Welcome, {username}.
+                        Hello, {username}. You can upload SONAR images for classification and explanation.
                       </p>
                     </div>
                   </div>
@@ -478,4 +498,3 @@ export default function Sonar() {
     </div>
   );
 }
-

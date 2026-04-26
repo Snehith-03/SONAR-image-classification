@@ -1,4 +1,3 @@
-// Results.jsx
 import React, { useEffect } from 'react';
 import { Download, X, Waves } from 'lucide-react';
 import './SonarDashboard.css';
@@ -94,7 +93,7 @@ const Results = ({ classificationResult, onReset, onBack, onToggleBookmark, isBo
               </p>
             </div>
 
-            {/* Images */}
+            {/* Images - Now with 3 images */}
             <div className="images-grid">
 
               <div className="image-card">
@@ -107,22 +106,42 @@ const Results = ({ classificationResult, onReset, onBack, onToggleBookmark, isBo
                 </div>
               </div>
 
-              <div className="image-card">
-                <h4>Classification Heatmap</h4>
-                <div className="image-container">
-                  <img src={classificationResult.heatmap} alt="Classification heatmap" />
-                </div>
-                <div className="heatmap-legend">
-                  <span className="legend-low">Low Confidence</span>
-                  <div className="legend-colors">
-                    <div className="color-blue"></div>
-                    <div className="color-green"></div>
-                    <div className="color-yellow"></div>
-                    <div className="color-red"></div>
+              {/* Grad-CAM Heatmap */}
+              {classificationResult.gradcamHeatmap && (
+                <div className="image-card">
+                  <h4>Grad-CAM Heatmap</h4>
+                  <div className="image-container">
+                    <img src={classificationResult.gradcamHeatmap} alt="Grad-CAM heatmap" />
                   </div>
-                  <span className="legend-high">High Confidence</span>
+                  <div className="heatmap-legend">
+                    <span className="legend-low">Low Activation</span>
+                    <div className="legend-colors">
+                      <div className="color-blue"></div>
+                      <div className="color-green"></div>
+                      <div className="color-yellow"></div>
+                      <div className="color-red"></div>
+                    </div>
+                    <span className="legend-high">High Activation</span>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* LIME Explanation */}
+              {classificationResult.limeHeatmap && (
+                <div className="image-card">
+                  <h4>LIME Explanation</h4>
+                  <div className="image-container">
+                    <img src={classificationResult.limeHeatmap} alt="LIME explanation" />
+                  </div>
+                  <div className="heatmap-legend">
+                    <span className="legend-low">Low Importance</span>
+                    <div className="legend-colors">
+                     
+                    </div>
+                    <span className="legend-high">High Importance</span>
+                  </div>
+                </div>
+              )}
 
             </div>
 

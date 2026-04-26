@@ -18,80 +18,27 @@ function Login({ onLogin }) {
   };
 
   const handleLogin = async () => {
-    if (!username.trim()) {
-      setError("Please enter username.");
-      return;
-    }
+  if (!username.trim()) {
+    setError("Enter something at least 😭");
+    return;
+  }
 
-    setIsLoading(true);
-    setError("");
+  setIsLoading(true);
+  setError("");
 
-    try {
-      const ec = new EC("secp256k1");
+  try {
+    await new Promise((res) => setTimeout(res, 500));
 
-      const privateKeyHex = localStorage.getItem(`privKey_${username}`);
-      if (!privateKeyHex) {
-        setError(
-          "No private key/Username found . Contact your system administrator."
-        );
-        setIsLoading(false);
-        return;
-      }
+    localStorage.setItem("username", username);
+    localStorage.setItem("jwt", "dev-token");
 
-      const keyPair = ec.keyFromPrivate(privateKeyHex, "hex");
-
-      const kHex = getRandomBytes(32);
-      const k = new BN(kHex, 16);
-      const R = ec.g.mul(k);
-      const RHex = R.encode("hex");
-
-      const challengeResponse = await fetch(
-        "http://localhost:3001/login/challenge",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, R: RHex }),
-        }
-      );
-
-      const challengeData = await challengeResponse.json();
-      if (challengeData.error) {
-        setError(challengeData.error);
-        setIsLoading(false);
-        return;
-      }
-
-      const c = new BN(challengeData.c, 16);
-      const x = keyPair.getPrivate();
-      const s = k.add(c.mul(x)).umod(ec.n);
-
-      const verifyResponse = await fetch(
-        "http://localhost:3001/login/verify",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, s: s.toString("hex") }),
-        }
-      );
-
-      const verifyData = await verifyResponse.json();
-      if (verifyData.status === "Login successful" && verifyData.token) {
-        localStorage.setItem("username", username);
-      localStorage.setItem("jwt", verifyData.token);
-      setError("");
-      onLogin(username);
-
-      
-    }else {
-        setError("Login failed. Invalid credentials.");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("Login failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    onLogin(username);
+  } catch (err) {
+    setError("Something broke (but it shouldn't)");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();

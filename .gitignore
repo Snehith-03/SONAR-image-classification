@@ -1,0 +1,13 @@
+# ML stuff
+src/model/Dataset/
+src/model/DenseNet121_final_model/
+
+__pycache__/
+*.pyc
+
+src/web/node_modules/
+
+.env
+
+*.log
+venv/
